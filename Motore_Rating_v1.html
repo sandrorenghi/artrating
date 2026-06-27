@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motore Rating Artisti</title>
+<style>
+:root {
+  --gold:#B8860B;--gold-light:#FAF0DC;--gold-mid:#D4A843;--gold-dark:#8B6508;
+  --bg:#F8F7F4;--surface:#FFFFFF;--surface-alt:#F3F2EF;
+  --border:#E2DFD8;--border-strong:#C8C4BB;
+  --text:#1A1916;--text-sec:#5C5A54;--text-muted:#9B9891;
+  --accent:#1A56A0;--accent-bg:#EEF4FC;--accent-border:#B3CFF0;
+  --success:#166534;--success-bg:#DCFCE7;
+  --danger:#991B1B;--danger-bg:#FEE2E2;
+  --warn-bg:#FFFBEB;--warn-border:#FCD34D;
+  --radius:8px;--radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;}
+.shell{max-width:920px;margin:0 auto;padding:0 1.5rem 4rem;}
+header{padding:2rem 0 1.5rem;border-bottom:.5px solid var(--border);margin-bottom:2rem;display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{width:44px;height:44px;border-radius:10px;background:var(--gold-light);border:1px solid var(--gold-mid);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.logo h1{font-size:18px;font-weight:600;letter-spacing:-.02em;}
+.logo p{font-size:12px;color:var(--text-muted);margin-top:1px;}
+.header-meta{font-size:11px;color:var(--text-muted);text-align:right;line-height:1.5;}
+.tabs{display:flex;gap:2px;background:var(--surface-alt);border:.5px solid var(--border);border-radius:var(--radius);padding:3px;margin-bottom:1.5rem;width:fit-content;}
+.tab-btn{padding:7px 16px;font-size:13px;border:none;background:transparent;border-radius:6px;cursor:pointer;color:var(--text-sec);display:flex;align-items:center;gap:6px;transition:all .15s;font-family:inherit;}
+.tab-btn.active{background:var(--surface);color:var(--text);font-weight:500;box-shadow:0 0 0 .5px var(--border);}
+.tab-btn:hover:not(.active){background:var(--surface);}
+.search-wrap{display:flex;gap:10px;align-items:center;margin-bottom:1rem;}
+input[type=text],input[type=number],input[type=password],select,textarea{padding:9px 12px;font-size:13px;border:.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);color:var(--text);font-family:inherit;outline:none;transition:border-color .15s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold-mid);box-shadow:0 0 0 3px rgba(184,134,11,.1);}
+input::placeholder{color:var(--text-muted);}
+.btn{padding:9px 18px;font-size:13px;font-weight:500;border-radius:var(--radius);cursor:pointer;font-family:inherit;transition:all .15s;border:.5px solid;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--gold);color:#fff;border-color:var(--gold-dark);}
+.btn-primary:hover{background:var(--gold-dark);}
+.btn-secondary{background:var(--surface);color:var(--text);border-color:var(--border-strong);}
+.btn-secondary:hover{background:var(--surface-alt);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:#FCA5A5;}
+
+/* mode selector */
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem;}
+.mode-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;cursor:pointer;transition:border-color .2s;}
+.mode-card:hover{border-color:var(--gold-mid);}
+.mode-card.selected{border:2px solid var(--gold-mid);background:var(--gold-light);}
+.mode-card h3{font-size:14px;font-weight:600;margin-bottom:4px;}
+.mode-card p{font-size:12px;color:var(--text-sec);line-height:1.5;}
+.mode-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;margin-bottom:8px;}
+.badge-easy{background:var(--success-bg);color:var(--success);}
+.badge-pro{background:var(--accent-bg);color:var(--accent);}
+
+/* info boxes */
+.info-box{background:var(--accent-bg);border:.5px solid var(--accent-border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:13px;line-height:1.6;}
+.info-box strong{color:var(--accent);}
+.warn-box{background:var(--warn-bg);border:.5px solid var(--warn-border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:13px;line-height:1.6;}
+.err-box{background:var(--danger-bg);border:.5px solid #FCA5A5;border-radius:var(--radius);padding:12px 14px;font-size:13px;color:var(--danger);line-height:1.5;}
+
+/* prompt box */
+.prompt-wrap{margin-bottom:1rem;}
+.prompt-label{font-size:12px;color:var(--text-sec);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.prompt-box{background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:12px;border-radius:var(--radius);padding:12px 14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;border:.5px solid #45475a;max-height:220px;overflow-y:auto;}
+.json-input-wrap{margin-top:12px;}
+.json-input-wrap label{font-size:12px;color:var(--text-sec);margin-bottom:6px;display:block;}
+.json-input-wrap textarea{height:140px;font-family:monospace;font-size:12px;resize:vertical;}
+.json-input-wrap .btn-row{display:flex;gap:8px;margin-top:8px;}
+
+/* form */
+.form-section{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;}
+.form-section-title{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-field{display:flex;flex-direction:column;gap:4px;}
+.form-field.full{grid-column:1/-1;}
+.form-label{font-size:11px;color:var(--text-sec);font-weight:500;}
+.form-actions{display:flex;gap:8px;margin-top:1.25rem;}
+
+/* result */
+.result-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-top:1rem;}
+.result-header{padding:1.25rem;border-bottom:.5px solid var(--border);display:flex;align-items:center;gap:16px;background:#FBF7EE;}
+.artist-avatar{width:56px;height:56px;border-radius:50%;background:var(--gold-light);border:2px solid var(--gold-mid);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--gold);flex-shrink:0;}
+.artist-name{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.02em;}
+.artist-meta{font-size:13px;color:var(--text-sec);margin-top:2px;}
+.rating-block{text-align:right;}
+.rating-number{font-size:34px;font-weight:700;color:var(--gold);letter-spacing:-.03em;line-height:1;}
+.rating-label{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.rating-stars{font-size:16px;color:var(--gold);margin-top:4px;letter-spacing:1px;}
+.result-body{padding:1.25rem;}
+.sec-lbl{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;margin-top:1.25rem;}
+.sec-lbl:first-child{margin-top:0;}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;}
+.metric-tile{background:var(--surface-alt);border-radius:var(--radius);padding:9px 12px;}
+.metric-lbl{font-size:10px;color:var(--text-muted);margin-bottom:3px;}
+.metric-val{font-size:14px;font-weight:500;color:var(--text);}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
+.badge-yes{background:var(--success-bg);color:var(--success);}
+.badge-no{background:var(--danger-bg);color:var(--danger);}
+.badge-na{background:var(--surface-alt);color:var(--text-muted);border:.5px solid var(--border);}
+.score-bars{display:flex;flex-direction:column;gap:7px;}
+.score-bar-head{display:flex;justify-content:space-between;margin-bottom:3px;}
+.score-bar-lbl{font-size:12px;color:var(--text-sec);}
+.score-bar-pts{font-size:12px;font-weight:500;}
+.pts-pos{color:var(--text);}
+.pts-neg{color:var(--danger);}
+.score-track{height:4px;background:var(--surface-alt);border-radius:2px;overflow:hidden;}
+.score-fill{height:100%;border-radius:2px;background:var(--gold-mid);}
+.score-fill.neg{background:#FCA5A5;}
+.ai-box{background:var(--accent-bg);border:.5px solid var(--accent-border);border-radius:var(--radius);padding:1rem;margin-top:1rem;}
+.ai-box-title{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.ai-box-text{font-size:13px;color:var(--text);line-height:1.7;}
+.export-bar{display:flex;gap:8px;align-items:center;padding:12px 1.25rem;border-top:.5px solid var(--border);background:var(--surface-alt);}
+.export-label{font-size:12px;color:var(--text-muted);flex:1;}
+.history-section{margin-top:2rem;}
+.history-title{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.history-list{display:flex;flex-direction:column;gap:6px;}
+.history-item{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;}
+.history-item:hover{border-color:var(--gold-mid);}
+.history-avatar{width:32px;height:32px;border-radius:50%;background:var(--gold-light);border:1px solid var(--gold-mid);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold);flex-shrink:0;}
+.history-name{font-size:13px;font-weight:500;}
+.history-meta{font-size:11px;color:var(--text-muted);}
+.history-score{font-size:14px;font-weight:700;color:var(--gold);margin-left:auto;}
+.history-empty{font-size:13px;color:var(--text-muted);padding:.5rem 0;}
+footer{margin-top:3rem;padding-top:1.5rem;border-top:.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+footer p{font-size:11px;color:var(--text-muted);}
+@media print{.tabs,.mode-cards,.search-wrap,.form-section,.export-bar,.history-section,.info-box,.warn-box,.prompt-wrap,.json-input-wrap,.btn,.apikey-section,footer{display:none!important;}.result-card{border:1px solid #ccc!important;}body{background:white!important;}}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}.form-field.full{grid-column:1;}.metrics-grid{grid-template-columns:repeat(2,1fr);}.result-header{flex-direction:column;text-align:center;}.rating-block{text-align:center;}.mode-cards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎨</div>
+    <div>
+      <h1>Motore Rating Artisti</h1>
+      <p>Art Advisory — valutazione profilo e mercato</p>
+    </div>
+  </div>
+  <div class="header-meta">v1.1 · Uso interno<br>Crédit Agricole Art Advisory</div>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" id="tab-ai-btn" onclick="switchTab('ai')">🤖 Ricerca con AI</button>
+  <button class="tab-btn" id="tab-manual-btn" onclick="switchTab('manual')">✏️ Inserimento manuale</button>
+</div>
+
+<!-- TAB AI -->
+<div id="tab-ai">
+  <div class="info-box">
+    <strong>Come funziona la ricerca AI</strong><br>
+    Inserisci il nome dell'artista, copia il prompt generato e incollalo su <a href="https://claude.ai" target="_blank">claude.ai</a> (o qualsiasi AI). Poi incolla la risposta JSON nel campo qui sotto — il motore calcola il rating automaticamente.
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" id="artist-input" placeholder="Es. Caravaggio, Lucio Fontana, Basquiat…" style="flex:1" />
+    <button class="btn btn-primary" onclick="generatePrompt()">Genera prompt ↗</button>
+  </div>
+
+  <div id="prompt-area" style="display:none">
+    <div class="prompt-wrap">
+      <div class="prompt-label">
+        <span>1. Copia questo prompt e incollalo su claude.ai</span>
+        <button class="btn btn-secondary btn-sm" onclick="copyPrompt()">📋 Copia</button>
+      </div>
+      <div class="prompt-box" id="prompt-box"></div>
+    </div>
+    <div class="json-input-wrap">
+      <label>2. Incolla qui la risposta JSON che ti dà l'AI</label>
+      <textarea id="json-input" placeholder='{ "name": "Lucio Fontana", "movement": "Spazialismo", ... }'></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="parseAndRender()">Calcola rating ↗</button>
+        <button class="btn btn-secondary" onclick="resetAI()">Reset</button>
+      </div>
+    </div>
+    <div id="ai-result"></div>
+  </div>
+</div>
+
+<!-- TAB MANUAL -->
+<div id="tab-manual" style="display:none">
+  <div class="form-section">
+    <div class="form-section-title">📋 Anagrafica</div>
+    <div class="form-grid">
+      <div class="form-field full"><label class="form-label">Nome e cognome *</label><input type="text" id="m-name" placeholder="Es. Mario Ceroli" /></div>
+      <div class="form-field"><label class="form-label">Data di nascita</label><input type="text" id="m-birth" placeholder="GG/MM/AAAA" /></div>
+      <div class="form-field"><label class="form-label">Data di morte</label><input type="text" id="m-death" placeholder="GG/MM/AAAA (se deceduto)" /></div>
+      <div class="form-field full"><label class="form-label">Periodo di attività artistica</label><input type="text" id="m-period" placeholder="Es. 1960–2010" /></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">🎭 Curriculum artistico</div>
+    <div class="form-grid">
+      <div class="form-field full"><label class="form-label">Appartenenza a movimento</label><input type="text" id="m-movement" placeholder="Es. Arte Povera, Astrattismo…" /></div>
+      <div class="form-field"><label class="form-label">Caposcuola del movimento (+10 pt)</label>
+        <select id="m-leader"><option value="">— seleziona —</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="form-field"><label class="form-label">Premi artistici (+5 pt)</label><input type="text" id="m-prizes" placeholder="Es. Premio Nazionale delle Arti" /></div>
+      <div class="form-field"><label class="form-label">Altri riconoscimenti (+5 pt)</label><input type="text" id="m-recog" placeholder="Es. Medaglia d'oro…" /></div>
+      <div class="form-field"><label class="form-label">Musei pubblici (+10 pt)</label>
+        <select id="m-pub-museum"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="form-field"><label class="form-label">Musei privati (+8 pt)</label>
+        <select id="m-priv-museum"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="form-field"><label class="form-label">Collezioni pubbliche (+10 pt)</label>
+        <select id="m-pub-coll"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="form-field"><label class="form-label">Collezioni private (+8 pt)</label>
+        <select id="m-priv-coll"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="form-field full"><label class="form-label">Gallerie di riferimento (+20 pt)</label><input type="text" id="m-galleries" placeholder="Es. Gagosian, White Cube, Nahmad…" /></div>
+      <div class="form-field"><label class="form-label">N° monografie edite (×0.1 pt)</label><input type="number" id="m-mono" placeholder="0" min="0" /></div>
+      <div class="form-field"><label class="form-label">N° cataloghi collettivi (×0.1 pt)</label><input type="number" id="m-cat" placeholder="0" min="0" /></div>
+      <div class="form-field"><label class="form-label">N° mostre personali (×0.1 pt)</label><input type="number" id="m-solo" placeholder="0" min="0" /></div>
+      <div class="form-field"><label class="form-label">N° mostre collettive (×0.1 pt)</label><input type="number" id="m-group" placeholder="0" min="0" /></div>
+      <div class="form-field"><label class="form-label">Fatturato aste ultimo anno €</label><input type="number" id="m-auction1" placeholder="0" min="0" /></div>
+      <div class="form-field"><label class="form-label">Fatturato aste ultimi 3 anni €</label><input type="number" id="m-auction3" placeholder="0" min="0" /></div>
+      <div class="form-field"><label class="form-label">N° falsi riscontrati (−1 pt ciascuno)</label><input type="number" id="m-fakes" placeholder="0" min="0" /></div>
+      <div class="form-field"><label class="form-label">Catalogue raisonné (+10 pt)</label>
+        <select id="m-cr"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="form-field"><label class="form-label">Fondazione / Archivio (+10 pt)</label>
+        <select id="m-found"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="form-field"><label class="form-label">Curatori di riferimento (+10 pt)</label>
+        <select id="m-cur"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">🌐 Rinomanza</div>
+    <div class="form-grid">
+      <div class="form-field"><label class="form-label">Volume mensile ricerche internet</label><input type="number" id="m-search" placeholder="0" min="0" /></div>
+      <div class="form-field"><label class="form-label">Note</label><input type="text" id="m-notes" placeholder="Es. Retrospettiva MoMA 2023…" /></div>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary" onclick="computeManual()">Calcola rating ↗</button>
+    <button class="btn btn-secondary" onclick="resetManual()">Reset form</button>
+  </div>
+  <div id="manual-result"></div>
+</div>
+
+<!-- HISTORY -->
+<div class="history-section">
+  <div class="history-title">
+    <span>Ricerche recenti</span>
+    <button class="btn btn-secondary btn-sm" onclick="clearHistory()">Cancella tutto</button>
+  </div>
+  <div class="history-list" id="history-list">
+    <div class="history-empty">Nessuna ricerca ancora.</div>
+  </div>
+</div>
+
+<footer>
+  <p>Motore Rating Artisti v1.1 · Uso interno · Crédit Agricole Art Advisory</p>
+  <p>I dati AI sono stime indicative — verificare sempre con fonti certificate.</p>
+</footer>
+
+</div>
+<script>
+const HIST_KEY='artrating_history';
+const W={movement:10,leader:10,prizes:5,recog:5,pubMuseum:10,privMuseum:8,pubColl:10,privColl:8,galleries:20,mono:.1,cat:.1,solo:.1,group:.1,auction1:.00001,auction3:.00001,fakes:1,cr:10,found:10,cur:10,search:.000001};
+
+function switchTab(t){
+  ['ai','manual'].forEach(x=>{
+    document.getElementById('tab-'+x).style.display=x===t?'':'none';
+    document.getElementById('tab-'+x+'-btn').classList.toggle('active',x===t);
+  });
+}
+
+function yesScore(v,p){const s=String(v||'').toLowerCase().trim();return(s==='si'||s==='sì'||s==='yes')?p:0;}
+
+function buildScores(d){
+  const b=[
+    {label:'Appartenenza a movimento',pts:d.movement?W.movement:0},
+    {label:'Caposcuola del movimento',pts:yesScore(d.leader,W.leader)},
+    {label:'Premi artistici',pts:d.prizes?W.prizes:0},
+    {label:'Altri riconoscimenti',pts:d.recog?W.recog:0},
+    {label:'Musei pubblici',pts:yesScore(d.pubMuseum,W.pubMuseum)},
+    {label:'Musei privati',pts:yesScore(d.privMuseum,W.privMuseum)},
+    {label:'Collezioni pubbliche',pts:yesScore(d.pubColl,W.pubColl)},
+    {label:'Collezioni private',pts:yesScore(d.privColl,W.privColl)},
+    {label:'Gallerie di riferimento',pts:d.galleries?W.galleries:0},
+    {label:'Monografie edite',pts:Math.round((Number(d.mono)||0)*W.mono*10)/10},
+    {label:'Cataloghi collettivi',pts:Math.round((Number(d.cat)||0)*W.cat*10)/10},
+    {label:'Mostre personali',pts:Math.round((Number(d.solo)||0)*W.solo*10)/10},
+    {label:'Mostre collettive',pts:Math.round((Number(d.group)||0)*W.group*10)/10},
+    {label:'Aste ultimo anno',pts:Math.round((Number(d.auction1)||0)*W.auction1*100)/100},
+    {label:'Aste ultimi 3 anni',pts:Math.round((Number(d.auction3)||0)*W.auction3*100)/100},
+    {label:'Falsi riscontrati',pts:-1*(Number(d.fakes)||0)*W.fakes},
+    {label:'Catalogue raisonné',pts:yesScore(d.cr,W.cr)},
+    {label:'Fondazione / Archivio',pts:yesScore(d.found,W.found)},
+    {label:'Curatori di riferimento',pts:yesScore(d.cur,W.cur)},
+  ];
+  const r=[{label:'Ricerche internet',pts:Math.round((Number(d.search)||0)*W.search*100)/100}];
+  const total=[...b,...r].reduce((s,x)=>s+x.pts,0);
+  return{breakdown:b,renown:r,total};
+}
+
+function fmtNum(n){if(n===null||n===undefined||n==='')return'—';return Number(n).toLocaleString('it-IT');}
+function stars(r){if(r>=5000)return'★★★★★';if(r>=2000)return'★★★★☆';if(r>=500)return'★★★☆☆';if(r>=100)return'★★☆☆☆';return'★☆☆☆☆';}
+function badge(v){if(!v||v==='')return'<span class="badge badge-na">N/D</span>';const s=String(v).toLowerCase().trim();if(s==='si'||s==='sì')return'<span class="badge badge-yes">✓ Sì</span>';if(s==='no')return'<span class="badge badge-no">✗ No</span>';return`<span class="badge badge-na">${v}</span>`;}
+
+function renderResult(data,container){
+  const initials=data.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const total=Math.round(data.total);
+  const allS=[...data.breakdown,...data.renown];
+  const maxP=Math.max(...allS.map(s=>Math.abs(s.pts)),1);
+  const bars=allS.filter(s=>s.pts!==0).map(s=>{
+    const pct=Math.min(100,(Math.abs(s.pts)/maxP)*100).toFixed(1);
+    const neg=s.pts<0;
+    return`<div><div class="score-bar-head"><span class="score-bar-lbl">${s.label}</span><span class="score-bar-pts ${neg?'pts-neg':'pts-pos'}">${neg?'−':'+'}${fmtNum(Math.abs(s.pts))}</span></div><div class="score-track"><div class="score-fill${neg?' neg':''}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+  const safeData=JSON.stringify(JSON.stringify({name:data.name,total,movement:data.movement||'',period:data.period||''}));
+  container.innerHTML=`<div class="result-card">
+    <div class="result-header">
+      <div class="artist-avatar">${initials}</div>
+      <div style="flex:1">
+        <div class="artist-name">${data.name}</div>
+        <div class="artist-meta">${[data.period,data.movement].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div class="rating-block">
+        <div class="rating-number">${fmtNum(total)}</div>
+        <div class="rating-label">punti rating</div>
+        <div class="rating-stars">${stars(total)}</div>
+      </div>
+    </div>
+    <div class="result-body">
+      <div class="sec-lbl">Presenze istituzionali</div>
+      <div class="metrics-grid">
+        <div class="metric-tile"><div class="metric-lbl">Musei pubblici</div><div class="metric-val">${badge(data.pubMuseum)}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Musei privati</div><div class="metric-val">${badge(data.privMuseum)}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Coll. pubbliche</div><div class="metric-val">${badge(data.pubColl)}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Coll. private</div><div class="metric-val">${badge(data.privColl)}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Catalogue raisonné</div><div class="metric-val">${badge(data.cr)}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Fondazione</div><div class="metric-val">${badge(data.found)}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Curatori rif.</div><div class="metric-val">${badge(data.cur)}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Caposcuola</div><div class="metric-val">${badge(data.leader)}</div></div>
+      </div>
+      <div class="sec-lbl">Attività espositiva</div>
+      <div class="metrics-grid">
+        <div class="metric-tile"><div class="metric-lbl">Mostre personali</div><div class="metric-val">${fmtNum(data.solo)||'—'}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Mostre collettive</div><div class="metric-val">${fmtNum(data.group)||'—'}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Monografie</div><div class="metric-val">${fmtNum(data.mono)||'—'}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Cataloghi coll.</div><div class="metric-val">${fmtNum(data.cat)||'—'}</div></div>
+      </div>
+      <div class="sec-lbl">Mercato aste</div>
+      <div class="metrics-grid">
+        <div class="metric-tile"><div class="metric-lbl">Fatturato anno €</div><div class="metric-val">€ ${fmtNum(data.auction1)||'—'}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Fatturato 3 anni €</div><div class="metric-val">€ ${fmtNum(data.auction3)||'—'}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Falsi riscontrati</div><div class="metric-val" style="color:${(data.fakes>0)?'var(--danger)':'inherit'}">${fmtNum(data.fakes)||'0'}</div></div>
+        <div class="metric-tile"><div class="metric-lbl">Gallerie di rif.</div><div class="metric-val" style="font-size:12px;line-height:1.4">${data.galleries||'—'}</div></div>
+      </div>
+      <div class="sec-lbl">Dettaglio punteggi</div>
+      <div class="score-bars">${bars}</div>
+      ${data.aiComment?`<div class="ai-box"><div class="ai-box-title">🤖 Sintesi AI</div><div class="ai-box-text">${data.aiComment}</div></div>`:''}
+    </div>
+    <div class="export-bar">
+      <span class="export-label">Esporta</span>
+      <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Stampa / PDF</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportJSON(${safeData})">⬇️ JSON</button>
+    </div>
+  </div>`;
+  saveToHistory(data);
+}
+
+// ── AI PROMPT FLOW ───────────────────────────────────────────────────────────
+function generatePrompt(){
+  const name=document.getElementById('artist-input').value.trim();
+  if(!name)return;
+  const prompt=`Sei un esperto di mercato dell'arte. Per l'artista "${name}" (pittore/scultore), restituisci SOLO un oggetto JSON valido — nessun testo prima o dopo, nessun backtick, nessun markdown. Schema esatto:
+{
+  "name": "Nome Cognome ufficiale completo",
+  "birth": "anno o GG/MM/AAAA",
+  "death": "anno o stringa vuota se vivente",
+  "period": "es. 1920-1985",
+  "movement": "movimento principale o stringa vuota",
+  "leader": "si o no",
+  "prizes": "descrizione premi o stringa vuota",
+  "recog": "riconoscimenti ufficiali o stringa vuota",
+  "pubMuseum": "si o no",
+  "privMuseum": "si o no",
+  "pubColl": "si o no",
+  "privColl": "si o no",
+  "galleries": "gallerie principali separate da virgola, o stringa vuota",
+  "mono": 0,
+  "cat": 0,
+  "solo": 0,
+  "group": 0,
+  "auction1": 0,
+  "auction3": 0,
+  "fakes": 0,
+  "cr": "si o no",
+  "found": "si o no",
+  "cur": "si o no",
+  "search": 0,
+  "aiComment": "2-3 frasi sintetiche in italiano sul profilo artistico e di mercato, tono da advisor professionale"
+}
+Tutti i campi numerici sono interi. Se non conosci un dato usa 0 per i numeri e "no" per i booleani. Rispondi SOLO con il JSON.`;
+  document.getElementById('prompt-box').textContent=prompt;
+  document.getElementById('prompt-area').style.display='';
+  document.getElementById('json-input').value='';
+  document.getElementById('ai-result').innerHTML='';
+}
+
+function copyPrompt(){
+  const txt=document.getElementById('prompt-box').textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=event.target;btn.textContent='✓ Copiato!';setTimeout(()=>btn.textContent='📋 Copia',2000);
+  });
+}
+
+function parseAndRender(){
+  const raw=document.getElementById('json-input').value.trim();
+  if(!raw){document.getElementById('ai-result').innerHTML='<div class="err-box">Incolla prima il JSON restituito dall\'AI.</div>';return;}
+  try{
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    const{breakdown,renown,total}=buildScores(parsed);
+    renderResult({...parsed,breakdown,renown,total},document.getElementById('ai-result'));
+    document.getElementById('ai-result').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){
+    document.getElementById('ai-result').innerHTML=`<div class="err-box">❌ JSON non valido: ${e.message}<br>Assicurati che l'AI abbia restituito solo il JSON senza testo aggiuntivo.</div>`;
+  }
+}
+
+function resetAI(){
+  document.getElementById('artist-input').value='';
+  document.getElementById('prompt-area').style.display='none';
+  document.getElementById('json-input').value='';
+  document.getElementById('ai-result').innerHTML='';
+}
+
+// ── MANUAL ────────────────────────────────────────────────────────────────────
+function computeManual(){
+  const name=document.getElementById('m-name').value.trim();
+  if(!name){alert('Inserisci almeno il nome dell\'artista.');return;}
+  const d={name,period:document.getElementById('m-period').value.trim(),movement:document.getElementById('m-movement').value.trim(),leader:document.getElementById('m-leader').value,prizes:document.getElementById('m-prizes').value.trim(),recog:document.getElementById('m-recog').value.trim(),pubMuseum:document.getElementById('m-pub-museum').value,privMuseum:document.getElementById('m-priv-museum').value,pubColl:document.getElementById('m-pub-coll').value,privColl:document.getElementById('m-priv-coll').value,galleries:document.getElementById('m-galleries').value.trim(),mono:document.getElementById('m-mono').value,cat:document.getElementById('m-cat').value,solo:document.getElementById('m-solo').value,group:document.getElementById('m-group').value,auction1:document.getElementById('m-auction1').value,auction3:document.getElementById('m-auction3').value,fakes:document.getElementById('m-fakes').value,cr:document.getElementById('m-cr').value,found:document.getElementById('m-found').value,cur:document.getElementById('m-cur').value,search:document.getElementById('m-search').value,aiComment:''};
+  const{breakdown,renown,total}=buildScores(d);
+  renderResult({...d,breakdown,renown,total},document.getElementById('manual-result'));
+  document.getElementById('manual-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function resetManual(){document.querySelectorAll('#tab-manual input,#tab-manual select').forEach(el=>el.value='');document.getElementById('manual-result').innerHTML='';}
+
+// ── HISTORY ───────────────────────────────────────────────────────────────────
+function getHistory(){try{return JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}catch{return[];}}
+function saveToHistory(entry){let h=getHistory();h=h.filter(x=>x.name.toLowerCase()!==entry.name.toLowerCase());h.unshift({name:entry.name,movement:entry.movement||'',total:entry.total,period:entry.period||''});if(h.length>20)h=h.slice(0,20);localStorage.setItem(HIST_KEY,JSON.stringify(h));renderHistory();}
+function clearHistory(){localStorage.removeItem(HIST_KEY);renderHistory();}
+function renderHistory(){
+  const h=getHistory();
+  const el=document.getElementById('history-list');
+  if(!h.length){el.innerHTML='<div class="history-empty">Nessuna ricerca ancora — i risultati appariranno qui.</div>';return;}
+  el.innerHTML=h.map(x=>{
+    const ini=x.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    return`<div class="history-item" onclick="reloadHistory('${x.name.replace(/'/g,"\\'")}')">
+      <div class="history-avatar">${ini}</div>
+      <div><div class="history-name">${x.name}</div><div class="history-meta">${x.movement||'N/D'}${x.period?' · '+x.period:''}</div></div>
+      <div class="history-score">${fmtNum(Math.round(x.total))}</div>
+    </div>`;
+  }).join('');
+}
+function reloadHistory(name){switchTab('ai');document.getElementById('artist-input').value=name;generatePrompt();}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function exportJSON(jsonStr){const obj=JSON.parse(jsonStr);const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`rating_${obj.name.replace(/\s+/g,'_').toLowerCase()}.json`;a.click();}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  renderHistory();
+  document.getElementById('artist-input').addEventListener('keydown',e=>{if(e.key==='Enter')generatePrompt();});
+});
+</script>
+</body>
+</html>

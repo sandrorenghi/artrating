@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motore Rating Artisti v2 — Crédit Agricole Art Advisory</title>
+<style>
+:root{
+  --gold:#B8860B;--gold-light:#FAF0DC;--gold-mid:#D4A843;--gold-dark:#8B6508;
+  --bg:#F8F7F4;--surface:#FFFFFF;--surf1:#F3F2EF;--surf2:#ECEAE4;
+  --border:#E2DFD8;--border-s:#C8C4BB;
+  --text:#1A1916;--text2:#5C5A54;--textm:#9B9891;
+  --acc:#1A56A0;--acc-bg:#EEF4FC;--acc-b:#B3CFF0;
+  --ok:#166534;--ok-bg:#DCFCE7;
+  --err:#991B1B;--err-bg:#FEE2E2;
+  --warn-bg:#FFFBEB;--warn-b:#FCD34D;
+  --r:8px;--rl:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;}
+.shell{max-width:960px;margin:0 auto;padding:0 1.5rem 4rem;}
+header{padding:2rem 0 1.5rem;border-bottom:.5px solid var(--border);margin-bottom:2rem;display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{width:44px;height:44px;border-radius:10px;background:var(--gold-light);border:1px solid var(--gold-mid);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.logo h1{font-size:18px;font-weight:600;letter-spacing:-.02em;}
+.logo p{font-size:12px;color:var(--textm);margin-top:1px;}
+.hm{font-size:11px;color:var(--textm);text-align:right;line-height:1.5;}
+.tabs{display:flex;gap:2px;background:var(--surf1);border:.5px solid var(--border);border-radius:var(--r);padding:3px;margin-bottom:1.5rem;width:fit-content;}
+.tab-btn{padding:7px 16px;font-size:13px;border:none;background:transparent;border-radius:6px;cursor:pointer;color:var(--text2);transition:all .15s;font-family:inherit;}
+.tab-btn.active{background:var(--surface);color:var(--text);font-weight:500;box-shadow:0 0 0 .5px var(--border);}
+.tab-btn:hover:not(.active){background:var(--surface);}
+input[type=text],input[type=number],select,textarea{padding:8px 11px;font-size:13px;border:.5px solid var(--border-s);border-radius:var(--r);background:var(--surface);color:var(--text);font-family:inherit;outline:none;transition:border-color .15s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold-mid);box-shadow:0 0 0 3px rgba(184,134,11,.1);}
+input::placeholder,textarea::placeholder{color:var(--textm);}
+.btn{padding:9px 18px;font-size:13px;font-weight:500;border-radius:var(--r);cursor:pointer;font-family:inherit;transition:all .15s;border:.5px solid;display:inline-flex;align-items:center;gap:6px;}
+.btn-p{background:var(--gold);color:#fff;border-color:var(--gold-dark);}
+.btn-p:hover{background:var(--gold-dark);}
+.btn-s{background:var(--surface);color:var(--text);border-color:var(--border-s);}
+.btn-s:hover{background:var(--surf1);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.info-box{background:var(--acc-bg);border:.5px solid var(--acc-b);border-radius:var(--rl);padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:13px;line-height:1.6;}
+.info-box strong{color:var(--acc);}
+.err-box{background:var(--err-bg);border:.5px solid #FCA5A5;border-radius:var(--r);padding:12px 14px;font-size:13px;color:var(--err);line-height:1.5;margin-top:8px;}
+/* search */
+.search-wrap{display:flex;gap:10px;align-items:center;margin-bottom:1rem;}
+.search-wrap input{flex:1;}
+.prompt-box{background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:12px;border-radius:var(--r);padding:12px 14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;border:.5px solid #45475a;max-height:220px;overflow-y:auto;}
+.prompt-lbl{font-size:12px;color:var(--text2);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.json-wrap{margin-top:12px;}
+.json-wrap label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;}
+.json-wrap textarea{height:160px;font-family:monospace;font-size:12px;resize:vertical;}
+.btn-row{display:flex;gap:8px;margin-top:8px;}
+/* form sections */
+.fs{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);padding:1.25rem;margin-bottom:1rem;}
+.fs-title{font-size:11px;font-weight:600;color:var(--textm);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ff{display:flex;flex-direction:column;gap:4px;}
+.ff.full{grid-column:1/-1;}
+.ff label{font-size:11px;color:var(--text2);font-weight:500;}
+.ff .hint{font-size:10px;color:var(--textm);margin-top:2px;}
+/* tier input */
+.tier-group{background:var(--surf1);border-radius:var(--r);padding:12px;margin-top:6px;}
+.tier-group-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.tier-pts-badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;}
+.ta{background:#FAF0DC;color:#8B6508;}
+.tb{background:#EEF4FC;color:#0C447C;}
+.tc{background:#EAF3DE;color:#27500A;}
+.td{background:var(--surf2);color:var(--text2);}
+.tier-input-row{display:flex;gap:6px;margin-bottom:5px;align-items:center;}
+.tier-input-row input{flex:1;font-size:12px;padding:5px 8px;}
+.tier-input-row .rm{width:28px;height:28px;border:none;background:none;cursor:pointer;font-size:14px;color:var(--textm);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tier-input-row .rm:hover{background:var(--err-bg);color:var(--err);}
+.add-row{margin-top:4px;}
+.add-row button{font-size:11px;padding:4px 10px;border:.5px solid var(--border-s);background:var(--surface);border-radius:var(--r);cursor:pointer;color:var(--text2);font-family:inherit;}
+.add-row button:hover{background:var(--surf1);}
+.form-actions{display:flex;gap:8px;margin-top:1.25rem;}
+/* result */
+.result-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-top:1rem;}
+.rh{padding:1.25rem;border-bottom:.5px solid var(--border);display:flex;align-items:center;gap:16px;background:#FBF7EE;}
+.av{width:56px;height:56px;border-radius:50%;background:var(--gold-light);border:2px solid var(--gold-mid);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--gold);flex-shrink:0;}
+.an{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.02em;}
+.am{font-size:13px;color:var(--text2);margin-top:2px;}
+.rb{text-align:right;}
+.rn{font-size:34px;font-weight:700;color:var(--gold);letter-spacing:-.03em;line-height:1;}
+.rl2{font-size:11px;color:var(--textm);margin-top:2px;}
+.rs{font-size:16px;color:var(--gold);margin-top:4px;letter-spacing:1px;}
+.rbody{padding:1.25rem;}
+.sl{font-size:11px;font-weight:600;color:var(--textm);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;margin-top:1.25rem;}
+.sl:first-child{margin-top:0;}
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+.mt{background:var(--surf1);border-radius:var(--r);padding:9px 12px;}
+.ml{font-size:10px;color:var(--textm);margin-bottom:3px;}
+.mv{font-size:13px;font-weight:500;color:var(--text);}
+.badge{display:inline-flex;align-items:center;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
+.byes{background:var(--ok-bg);color:var(--ok);}
+.bno{background:var(--err-bg);color:var(--err);}
+.bna{background:var(--surf1);color:var(--textm);border:.5px solid var(--border);}
+/* tier result list */
+.tier-result{margin-top:8px;}
+.tri{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid var(--border);}
+.tri:last-child{border-bottom:none;}
+.tri-name{flex:1;font-size:12px;color:var(--text);}
+.tri-tier{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;}
+.tri-pts{font-size:12px;font-weight:600;color:var(--gold);}
+/* score bars */
+.sbars{display:flex;flex-direction:column;gap:6px;}
+.sbh{display:flex;justify-content:space-between;margin-bottom:2px;}
+.sbl{font-size:12px;color:var(--text2);}
+.sbp{font-size:12px;font-weight:500;color:var(--text);}
+.sbpn{font-size:12px;font-weight:500;color:var(--err);}
+.st{height:4px;background:var(--surf1);border-radius:2px;overflow:hidden;}
+.sf{height:100%;border-radius:2px;background:var(--gold-mid);}
+.sfn{height:100%;border-radius:2px;background:#FCA5A5;}
+.ai-box{background:var(--acc-bg);border:.5px solid var(--acc-b);border-radius:var(--r);padding:1rem;margin-top:1rem;}
+.ai-title{font-size:11px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.ai-text{font-size:13px;color:var(--text);line-height:1.7;}
+.export-bar{display:flex;gap:8px;align-items:center;padding:12px 1.25rem;border-top:.5px solid var(--border);background:var(--surf1);}
+.export-lbl{font-size:12px;color:var(--textm);flex:1;}
+/* history */
+.hist{margin-top:2rem;}
+.hist-title{font-size:11px;font-weight:600;color:var(--textm);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.hi{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;margin-bottom:6px;}
+.hi:hover{border-color:var(--gold-mid);}
+.ha{width:32px;height:32px;border-radius:50%;background:var(--gold-light);border:1px solid var(--gold-mid);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold);flex-shrink:0;}
+.hn{font-size:13px;font-weight:500;}
+.hm2{font-size:11px;color:var(--textm);}
+.hs{font-size:14px;font-weight:700;color:var(--gold);margin-left:auto;}
+footer{margin-top:3rem;padding-top:1.5rem;border-top:.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+footer p{font-size:11px;color:var(--textm);}
+@media print{.tabs,.search-wrap,.fs,.export-bar,.hist,.btn,.info-box,footer{display:none!important;}.result-card{border:1px solid #ccc!important;}body{background:white!important;}}
+@media(max-width:620px){.fg{grid-template-columns:1fr;}.ff.full{grid-column:1;}.mg{grid-template-columns:repeat(2,1fr);}.rh{flex-direction:column;text-align:center;}.rb{text-align:center;}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎨</div>
+    <div>
+      <h1>Motore Rating Artisti</h1>
+      <p>Art Advisory — valutazione profilo e mercato · v2.0</p>
+    </div>
+  </div>
+  <div class="hm">v2.0 · Tier musei e gallerie<br>Crédit Agricole Art Advisory</div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tab-ai-btn" onclick="switchTab('ai')">🤖 Ricerca con AI</button>
+  <button class="tab-btn" id="tab-manual-btn" onclick="switchTab('manual')">✏️ Inserimento manuale</button>
+</div>
+
+<!-- TAB AI -->
+<div id="tab-ai">
+  <div class="info-box">
+    <strong>Come funziona:</strong> inserisci il nome dell'artista → copia il prompt generato → incollalo su <a href="https://claude.ai" target="_blank">claude.ai</a> → incolla la risposta JSON nel campo sotto → calcola il rating.
+  </div>
+  <div class="search-wrap">
+    <input type="text" id="artist-input" placeholder="Es. Lucio Fontana, Anselm Kiefer, Cy Twombly…" />
+    <button class="btn btn-p" onclick="generatePrompt()">Genera prompt ↗</button>
+  </div>
+  <div id="prompt-area" style="display:none">
+    <div style="margin-bottom:1rem;">
+      <div class="prompt-lbl">
+        <span>1. Copia e incolla su claude.ai</span>
+        <button class="btn btn-s btn-sm" onclick="copyPrompt()">📋 Copia prompt</button>
+      </div>
+      <div class="prompt-box" id="prompt-box"></div>
+    </div>
+    <div class="json-wrap">
+      <label>2. Incolla qui la risposta JSON</label>
+      <textarea id="json-input" placeholder='{ "name": "Lucio Fontana", ... }'></textarea>
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="parseAndRender()">Calcola rating ↗</button>
+        <button class="btn btn-s" onclick="resetAI()">Reset</button>
+      </div>
+    </div>
+    <div id="ai-result"></div>
+  </div>
+</div>
+
+<!-- TAB MANUAL -->
+<div id="tab-manual" style="display:none">
+
+  <div class="fs">
+    <div class="fs-title">📋 Anagrafica</div>
+    <div class="fg">
+      <div class="ff full"><label>Nome e cognome *</label><input type="text" id="m-name" placeholder="Es. Mario Ceroli" /></div>
+      <div class="ff"><label>Data di nascita</label><input type="text" id="m-birth" placeholder="GG/MM/AAAA o anno" /></div>
+      <div class="ff"><label>Data di morte</label><input type="text" id="m-death" placeholder="GG/MM/AAAA (se deceduto)" /></div>
+      <div class="ff full"><label>Periodo di attività</label><input type="text" id="m-period" placeholder="Es. 1960–2010" /></div>
+      <div class="ff full"><label>Movimento artistico</label><input type="text" id="m-movement" placeholder="Es. Arte Povera, Astrattismo…" /></div>
+      <div class="ff"><label>Caposcuola del movimento</label>
+        <select id="m-leader"><option value="">—</option><option value="si">Sì (+10 pt)</option><option value="no">No</option></select></div>
+    </div>
+  </div>
+
+  <!-- MUSEI TIER -->
+  <div class="fs">
+    <div class="fs-title">🏛️ Musei e istituzioni pubbliche — punteggio per tier</div>
+
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier A — Elite internazionale</span><span class="tier-pts-badge ta">+30 pt ciascuno</span></div>
+      <div id="museumA-list"></div>
+      <div class="add-row"><button onclick="addTierInput('museumA-list','museo Tier A (MoMA, Tate, Pompidou…)')">+ Aggiungi museo</button></div>
+      <div class="hint" style="font-size:10px;color:var(--textm);margin-top:5px;">MoMA, Tate Modern, Centre Pompidou, Guggenheim NY/Bilbao, Louvre, Uffizi, Met, MOCA LA, Whitney, Reina Sofía…</div>
+    </div>
+
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier B — Primari nazionali/europei</span><span class="tier-pts-badge tb">+20 pt ciascuno</span></div>
+      <div id="museumB-list"></div>
+      <div class="add-row"><button onclick="addTierInput('museumB-list','museo Tier B (Stedelijk, MAXXI, GAM…)')">+ Aggiungi museo</button></div>
+      <div class="hint" style="font-size:10px;color:var(--textm);margin-top:5px;">Stedelijk, Kunsthaus Zürich, MAXXI, GAM Torino, Palazzo Grassi, Fondation Louis Vuitton, Pinakothek München…</div>
+    </div>
+
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier C — Importanti regionali/fondazioni</span><span class="tier-pts-badge tc">+10 pt ciascuno</span></div>
+      <div id="museumC-list"></div>
+      <div class="add-row"><button onclick="addTierInput('museumC-list','museo Tier C (fondazioni museali, musei nazionali…)')">+ Aggiungi museo</button></div>
+    </div>
+
+    <div class="tier-group">
+      <div class="tier-group-title"><span>Tier D — Musei locali/civici</span><span class="tier-pts-badge td">+4 pt ciascuno</span></div>
+      <div id="museumD-list"></div>
+      <div class="add-row"><button onclick="addTierInput('museumD-list','museo Tier D (musei civici, regionali…)')">+ Aggiungi museo</button></div>
+    </div>
+  </div>
+
+  <!-- GALLERIE TIER -->
+  <div class="fs">
+    <div class="fs-title">🖼️ Gallerie commerciali — punteggio per tier</div>
+
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier A — Mega gallerie internazionali</span><span class="tier-pts-badge ta">+25 pt ciascuna</span></div>
+      <div id="galleryA-list"></div>
+      <div class="add-row"><button onclick="addTierInput('galleryA-list','galleria Tier A (Gagosian, Hauser & Wirth…)')">+ Aggiungi galleria</button></div>
+      <div class="hint" style="font-size:10px;color:var(--textm);margin-top:5px;">Gagosian, Hauser & Wirth, Pace, David Zwirner, White Cube, Marian Goodman…</div>
+    </div>
+
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier B — Primarie internazionali</span><span class="tier-pts-badge tb">+15 pt ciascuna</span></div>
+      <div id="galleryB-list"></div>
+      <div class="add-row"><button onclick="addTierInput('galleryB-list','galleria Tier B (Tornabuoni, Lisson, Continua…)')">+ Aggiungi galleria</button></div>
+      <div class="hint" style="font-size:10px;color:var(--textm);margin-top:5px;">Tornabuoni Arte, Cardi Gallery, Sperone Westwater, Continua, Massimo De Carlo, Lisson Gallery…</div>
+    </div>
+
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier C — Gallerie nazionali di primo livello</span><span class="tier-pts-badge tc">+8 pt ciascuna</span></div>
+      <div id="galleryC-list"></div>
+      <div class="add-row"><button onclick="addTierInput('galleryC-list','galleria Tier C')">+ Aggiungi galleria</button></div>
+    </div>
+
+    <div class="tier-group">
+      <div class="tier-group-title"><span>Tier D — Gallerie locali/emergenti</span><span class="tier-pts-badge td">+3 pt ciascuna</span></div>
+      <div id="galleryD-list"></div>
+      <div class="add-row"><button onclick="addTierInput('galleryD-list','galleria Tier D')">+ Aggiungi galleria</button></div>
+    </div>
+  </div>
+
+  <!-- PREMI & RICONOSCIMENTI TIER -->
+  <div class="fs">
+    <div class="fs-title">🏆 Premi e riconoscimenti — punteggio per tier</div>
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier A — Premi internazionali massimi</span><span class="tier-pts-badge ta">+20 pt ciascuno</span></div>
+      <div id="prizeA-list"></div>
+      <div class="add-row"><button onclick="addTierInput('prizeA-list','premio (Turner Prize, Leone d\'oro, Praemium Imperiale…)')">+ Aggiungi premio</button></div>
+      <div class="hint" style="font-size:10px;color:var(--textm);margin-top:5px;">Turner Prize, Leone d'oro Venezia, Praemium Imperiale, Wolf Prize…</div>
+    </div>
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier B — Premi nazionali importanti</span><span class="tier-pts-badge tb">+10 pt ciascuno</span></div>
+      <div id="prizeB-list"></div>
+      <div class="add-row"><button onclick="addTierInput('prizeB-list','premio nazionale…')">+ Aggiungi premio</button></div>
+    </div>
+    <div class="tier-group">
+      <div class="tier-group-title"><span>Tier C — Menzioni e riconoscimenti minori</span><span class="tier-pts-badge tc">+5 pt ciascuno</span></div>
+      <div id="prizeC-list"></div>
+      <div class="add-row"><button onclick="addTierInput('prizeC-list','menzione / riconoscimento…')">+ Aggiungi riconoscimento</button></div>
+    </div>
+  </div>
+
+  <!-- FIERE -->
+  <div class="fs">
+    <div class="fs-title">🌐 Fiere internazionali</div>
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier A — Top fiere mondiali</span><span class="tier-pts-badge ta">+5 pt ciascuna</span></div>
+      <div id="fairA-list"></div>
+      <div class="add-row"><button onclick="addTierInput('fairA-list','fiera (Art Basel, Frieze, Venice…)')">+ Aggiungi fiera</button></div>
+      <div class="hint" style="font-size:10px;color:var(--textm);margin-top:5px;">Art Basel (CH/Miami/HK), Frieze, Biennale di Venezia, TEFAF…</div>
+    </div>
+    <div class="tier-group" style="margin-bottom:8px;">
+      <div class="tier-group-title"><span>Tier B — Fiere europee primarie</span><span class="tier-pts-badge tb">+3 pt ciascuna</span></div>
+      <div id="fairB-list"></div>
+      <div class="add-row"><button onclick="addTierInput('fairB-list','fiera (FIAC, Artissima, arco…)')">+ Aggiungi fiera</button></div>
+    </div>
+    <div class="tier-group">
+      <div class="tier-group-title"><span>Tier C — Altre fiere</span><span class="tier-pts-badge tc">+1 pt ciascuna</span></div>
+      <div id="fairC-list"></div>
+      <div class="add-row"><button onclick="addTierInput('fairC-list','fiera')">+ Aggiungi fiera</button></div>
+    </div>
+  </div>
+
+  <!-- DATI QUANTITATIVI -->
+  <div class="fs">
+    <div class="fs-title">📊 Dati quantitativi</div>
+    <div class="fg">
+      <div class="ff"><label>N° monografie edite (×0.1 pt)</label><input type="number" id="m-mono" placeholder="0" min="0" /></div>
+      <div class="ff"><label>N° cataloghi collettivi (×0.1 pt)</label><input type="number" id="m-cat" placeholder="0" min="0" /></div>
+      <div class="ff"><label>N° mostre personali (×0.1 pt)</label><input type="number" id="m-solo" placeholder="0" min="0" /></div>
+      <div class="ff"><label>N° mostre collettive (×0.1 pt)</label><input type="number" id="m-group" placeholder="0" min="0" /></div>
+      <div class="ff"><label>Fatturato aste ultimo anno (€)</label><input type="number" id="m-auction1" placeholder="0" min="0" /></div>
+      <div class="ff"><label>Fatturato aste ultimi 3 anni (€)</label><input type="number" id="m-auction3" placeholder="0" min="0" /></div>
+      <div class="ff"><label>N° falsi riscontrati (−1 pt ciasc.)</label><input type="number" id="m-fakes" placeholder="0" min="0" /></div>
+      <div class="ff"><label>Volume mensile ricerche internet</label><input type="number" id="m-search" placeholder="0" min="0" /></div>
+    </div>
+  </div>
+
+  <!-- QUALITÀ DOCUMENTALE -->
+  <div class="fs">
+    <div class="fs-title">📁 Qualità documentale e curatela</div>
+    <div class="fg">
+      <div class="ff"><label>Catalogue raisonné (+10 pt)</label>
+        <select id="m-cr"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="ff"><label>Fondazione / Archivio (+10 pt)</label>
+        <select id="m-found"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="ff"><label>Curatori di riferimento (livello)</label>
+        <select id="m-cur"><option value="">—</option><option value="intl">Internazionale (+15 pt)</option><option value="naz">Nazionale (+8 pt)</option><option value="no">No</option></select></div>
+      <div class="ff"><label>Presenza collezioni private (+8 pt)</label>
+        <select id="m-priv-coll"><option value="">—</option><option value="si">Sì</option><option value="no">No</option></select></div>
+      <div class="ff full"><label>Note aggiuntive</label><input type="text" id="m-notes" placeholder="Es. Retrospettiva MoMA 2024, acquisizione MNAM…" /></div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-p" onclick="computeManual()">Calcola rating ↗</button>
+    <button class="btn btn-s" onclick="resetManual()">Reset form</button>
+  </div>
+  <div id="manual-result"></div>
+</div>
+
+<!-- HISTORY -->
+<div class="hist">
+  <div class="hist-title">
+    <span>Ricerche recenti</span>
+    <button class="btn btn-s btn-sm" onclick="clearHistory()">Cancella tutto</button>
+  </div>
+  <div id="history-list"><div style="font-size:13px;color:var(--textm);">Nessuna ricerca ancora.</div></div>
+</div>
+
+<footer>
+  <p>Motore Rating Artisti v2.0 · Uso interno · Crédit Agricole Art Advisory</p>
+  <p>I dati AI sono stime indicative — verificare sempre con fonti certificate.</p>
+</footer>
+
+</div><!-- /shell -->
+<script>
+// ── TIER CONFIG ────────────────────────────────────────────────────────────────
+const TIER_PTS = {
+  museum:  { A:30, B:20, C:10, D:4 },
+  gallery: { A:25, B:15, C:8,  D:3 },
+  prize:   { A:20, B:10, C:5 },
+  fair:    { A:5,  B:3,  C:1 }
+};
+
+const WEIGHTS = {
+  leader:10, cr:10, found:10,
+  privColl:8,
+  mono:.1, cat:.1, solo:.1, group:.1,
+  auction1:.00001, auction3:.00001,
+  fakes:1, search:.000001
+};
+
+// ── TIER INPUT MANAGEMENT ─────────────────────────────────────────────────────
+function addTierInput(listId, placeholder, value='') {
+  const list = document.getElementById(listId);
+  const row = document.createElement('div');
+  row.className = 'tier-input-row';
+  row.innerHTML = `<input type="text" placeholder="${placeholder}" value="${value}" /><button class="rm" onclick="this.parentElement.remove()" title="Rimuovi">✕</button>`;
+  list.appendChild(row);
+}
+
+function getTierValues(listId) {
+  return Array.from(document.querySelectorAll(`#${listId} input`))
+    .map(i => i.value.trim()).filter(Boolean);
+}
+
+function calcTierScore(listId, type, tiers) {
+  const items = getTierValues(listId);
+  let total = 0;
+  const detail = [];
+  items.forEach(name => {
+    // Find which tier this belongs to — user placed it in the right tier group
+    const tierKey = listId.slice(-1); // last char: A, B, C, D
+    const pts = TIER_PTS[type] && TIER_PTS[type][tierKey] ? TIER_PTS[type][tierKey] : 0;
+    total += pts;
+    detail.push({ name, tier: tierKey, pts });
+  });
+  return { total, detail };
+}
+
+function calcAllTiers(type, tiersToUse) {
+  let total = 0;
+  const detail = [];
+  tiersToUse.forEach(t => {
+    const listId = type + t + '-list';
+    const items = getTierValues(listId);
+    items.forEach(name => {
+      const pts = TIER_PTS[type][t];
+      total += pts;
+      detail.push({ name, tier: t, pts });
+    });
+  });
+  return { total, detail };
+}
+
+// ── SCORING ────────────────────────────────────────────────────────────────────
+function yesScore(v, p) { const s=String(v||'').toLowerCase().trim(); return(s==='si'||s==='sì'||s==='yes')?p:0; }
+
+function buildScores(d) {
+  // Tier-based scores
+  const museumScore  = calcAllTiers('museum',  ['A','B','C','D']);
+  const galleryScore = calcAllTiers('gallery', ['A','B','C','D']);
+  const prizeScore   = calcAllTiers('prize',   ['A','B','C']);
+  const fairScore    = calcAllTiers('fair',    ['A','B','C']);
+
+  // Curator level
+  let curPts = 0;
+  const cur = String(d.cur||'').toLowerCase();
+  if(cur==='intl') curPts=15;
+  else if(cur==='naz') curPts=8;
+  else if(cur==='si'||cur==='sì') curPts=15; // legacy
+
+  const fixed = [
+    { label:'Caposcuola del movimento',    pts: yesScore(d.leader, WEIGHTS.leader) },
+    { label:'Catalogue raisonné',          pts: yesScore(d.cr, WEIGHTS.cr) },
+    { label:'Fondazione / Archivio',       pts: yesScore(d.found, WEIGHTS.found) },
+    { label:'Collezioni private',          pts: yesScore(d.privColl, WEIGHTS.privColl) },
+    { label:'Curatori di riferimento',     pts: curPts },
+    { label:'Monografie edite',            pts: Math.round((Number(d.mono)||0)*WEIGHTS.mono*10)/10 },
+    { label:'Cataloghi collettivi',        pts: Math.round((Number(d.cat)||0)*WEIGHTS.cat*10)/10 },
+    { label:'Mostre personali',            pts: Math.round((Number(d.solo)||0)*WEIGHTS.solo*10)/10 },
+    { label:'Mostre collettive',           pts: Math.round((Number(d.group)||0)*WEIGHTS.group*10)/10 },
+    { label:'Aste ultimo anno',            pts: Math.round((Number(d.auction1)||0)*WEIGHTS.auction1*100)/100 },
+    { label:'Aste ultimi 3 anni',          pts: Math.round((Number(d.auction3)||0)*WEIGHTS.auction3*100)/100 },
+    { label:'Falsi riscontrati',           pts: -1*(Number(d.fakes)||0)*WEIGHTS.fakes },
+    { label:'Ricerche internet',           pts: Math.round((Number(d.search)||0)*WEIGHTS.search*100)/100 },
+    { label:'Movimento artistico',         pts: d.movement ? 10 : 0 },
+  ];
+
+  const tierSummary = [
+    { label:`Musei (${museumScore.detail.length} istituzioni)`, pts: museumScore.total },
+    { label:`Gallerie (${galleryScore.detail.length} gallerie)`, pts: galleryScore.total },
+    { label:`Premi e riconoscimenti (${prizeScore.detail.length})`, pts: prizeScore.total },
+    { label:`Fiere internazionali (${fairScore.detail.length})`, pts: fairScore.total },
+  ].filter(x=>x.pts>0);
+
+  const all = [...tierSummary, ...fixed];
+  const total = all.reduce((s,x)=>s+x.pts,0);
+
+  return { breakdown: all, total, museumScore, galleryScore, prizeScore, fairScore };
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────────
+function fmtN(n){if(n===null||n===undefined||n==='')return'—';return Number(n).toLocaleString('it-IT');}
+function stars(r){if(r>=5000)return'★★★★★';if(r>=2000)return'★★★★☆';if(r>=500)return'★★★☆☆';if(r>=100)return'★★☆☆☆';return'★☆☆☆☆';}
+function badge(v){if(!v||v==='')return'<span class="badge bna">N/D</span>';const s=String(v).toLowerCase().trim();if(s==='si'||s==='sì')return'<span class="badge byes">✓ Sì</span>';if(s==='no')return'<span class="badge bno">✗ No</span>';return`<span class="badge bna">${v}</span>`;}
+function tierBadge(t){const map={A:'ta',B:'tb',C:'tc',D:'td'};return`<span class="tier-pts-badge ${map[t]||'td'}">Tier ${t}</span>`;}
+
+function tierListHtml(detail, ptsMap) {
+  if(!detail||!detail.length) return '<span style="font-size:12px;color:var(--textm);">Nessuna</span>';
+  return detail.map(x=>`<div class="tri"><span class="tri-name">${x.name}</span>${tierBadge(x.tier)}<span class="tri-pts">+${fmtN(x.pts)} pt</span></div>`).join('');
+}
+
+function renderResult(d, scores, container) {
+  const initials = d.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const total = Math.round(scores.total);
+  const allS = scores.breakdown;
+  const maxP = Math.max(...allS.map(s=>Math.abs(s.pts)),1);
+
+  const bars = allS.filter(s=>s.pts!==0).map(s=>{
+    const pct = Math.min(100,(Math.abs(s.pts)/maxP)*100).toFixed(1);
+    const neg = s.pts<0;
+    return `<div><div class="sbh"><span class="sbl">${s.label}</span><span class="${neg?'sbpn':'sbp'}">${neg?'−':'+'}${fmtN(Math.abs(s.pts))}</span></div><div class="st"><div class="${neg?'sfn':'sf'}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+
+  const curLabel = String(d.cur||'').toLowerCase()==='intl'?'Internazionale (+15 pt)':String(d.cur||'').toLowerCase()==='naz'?'Nazionale (+8 pt)':badge(d.cur);
+
+  container.innerHTML = `
+  <div class="result-card" id="result-main">
+    <div class="rh">
+      <div class="av">${initials}</div>
+      <div style="flex:1">
+        <div class="an">${d.name}</div>
+        <div class="am">${[d.period,d.movement].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div class="rb">
+        <div class="rn">${fmtN(total)}</div>
+        <div class="rl2">punti rating</div>
+        <div class="rs">${stars(total)}</div>
+      </div>
+    </div>
+    <div class="rbody">
+
+      <div class="sl">Musei e istituzioni</div>
+      <div class="tier-result">${tierListHtml(scores.museumScore.detail)}</div>
+      ${scores.museumScore.total>0?`<div style="text-align:right;font-size:12px;font-weight:600;color:var(--gold);margin-top:4px;">Subtotale musei: +${fmtN(scores.museumScore.total)} pt</div>`:''}
+
+      <div class="sl">Gallerie commerciali</div>
+      <div class="tier-result">${tierListHtml(scores.galleryScore.detail)}</div>
+      ${scores.galleryScore.total>0?`<div style="text-align:right;font-size:12px;font-weight:600;color:var(--gold);margin-top:4px;">Subtotale gallerie: +${fmtN(scores.galleryScore.total)} pt</div>`:''}
+
+      <div class="sl">Premi e fiere</div>
+      <div class="tier-result">${tierListHtml([...scores.prizeScore.detail,...scores.fairScore.detail])}</div>
+
+      <div class="sl">Qualità documentale</div>
+      <div class="mg">
+        <div class="mt"><div class="ml">Catalogue raisonné</div><div class="mv">${badge(d.cr)}</div></div>
+        <div class="mt"><div class="ml">Fondazione/Archivio</div><div class="mv">${badge(d.found)}</div></div>
+        <div class="mt"><div class="ml">Curatori rif.</div><div class="mv" style="font-size:12px">${curLabel}</div></div>
+        <div class="mt"><div class="ml">Caposcuola</div><div class="mv">${badge(d.leader)}</div></div>
+        <div class="mt"><div class="ml">Coll. private</div><div class="mv">${badge(d.privColl)}</div></div>
+      </div>
+
+      <div class="sl">Attività espositiva e mercato</div>
+      <div class="mg">
+        <div class="mt"><div class="ml">Mostre personali</div><div class="mv">${fmtN(d.solo)||'—'}</div></div>
+        <div class="mt"><div class="ml">Mostre collettive</div><div class="mv">${fmtN(d.group)||'—'}</div></div>
+        <div class="mt"><div class="ml">Monografie</div><div class="mv">${fmtN(d.mono)||'—'}</div></div>
+        <div class="mt"><div class="ml">Cataloghi</div><div class="mv">${fmtN(d.cat)||'—'}</div></div>
+        <div class="mt"><div class="ml">Aste anno €</div><div class="mv">€ ${fmtN(d.auction1)||'—'}</div></div>
+        <div class="mt"><div class="ml">Aste 3 anni €</div><div class="mv">€ ${fmtN(d.auction3)||'—'}</div></div>
+        <div class="mt"><div class="ml">Falsi riscontrati</div><div class="mv" style="color:${(d.fakes>0)?'var(--err)':'inherit'}">${fmtN(d.fakes)||'0'}</div></div>
+      </div>
+
+      <div class="sl">Dettaglio punteggi per voce</div>
+      <div class="sbars">${bars}</div>
+
+      ${d.aiComment?`<div class="ai-box"><div class="ai-title">🤖 Sintesi AI</div><div class="ai-text">${d.aiComment}</div></div>`:''}
+    </div>
+    <div class="export-bar">
+      <span class="export-lbl">${d.name} · ${fmtN(total)} pt · ${stars(total)}</span>
+      <button class="btn btn-s btn-sm" onclick="window.print()">🖨️ Stampa / PDF</button>
+    </div>
+  </div>`;
+
+  saveToHistory({ name:d.name, movement:d.movement||'', total:scores.total, period:d.period||'' });
+}
+
+// ── POPULATE TIERS FROM JSON (AI mode) ────────────────────────────────────────
+function populateTierFromJSON(d) {
+  // Clear all tier lists
+  ['museum','gallery','prize','fair'].forEach(type => {
+    ['A','B','C','D'].forEach(t => {
+      const el = document.getElementById(type+t+'-list');
+      if(el) el.innerHTML='';
+    });
+  });
+
+  // Populate museums
+  if(d.museumA) d.museumA.forEach(n => addTierInput('museumA-list','museo Tier A',n));
+  if(d.museumB) d.museumB.forEach(n => addTierInput('museumB-list','museo Tier B',n));
+  if(d.museumC) d.museumC.forEach(n => addTierInput('museumC-list','museo Tier C',n));
+  if(d.museumD) d.museumD.forEach(n => addTierInput('museumD-list','museo Tier D',n));
+
+  // Populate galleries
+  if(d.galleryA) d.galleryA.forEach(n => addTierInput('galleryA-list','galleria Tier A',n));
+  if(d.galleryB) d.galleryB.forEach(n => addTierInput('galleryB-list','galleria Tier B',n));
+  if(d.galleryC) d.galleryC.forEach(n => addTierInput('galleryC-list','galleria Tier C',n));
+  if(d.galleryD) d.galleryD.forEach(n => addTierInput('galleryD-list','galleria Tier D',n));
+
+  // Populate prizes
+  if(d.prizeA) d.prizeA.forEach(n => addTierInput('prizeA-list','premio Tier A',n));
+  if(d.prizeB) d.prizeB.forEach(n => addTierInput('prizeB-list','premio Tier B',n));
+  if(d.prizeC) d.prizeC.forEach(n => addTierInput('prizeC-list','riconoscimento Tier C',n));
+
+  // Populate fairs
+  if(d.fairA) d.fairA.forEach(n => addTierInput('fairA-list','fiera Tier A',n));
+  if(d.fairB) d.fairB.forEach(n => addTierInput('fairB-list','fiera Tier B',n));
+  if(d.fairC) d.fairC.forEach(n => addTierInput('fairC-list','fiera Tier C',n));
+}
+
+// ── AI PROMPT ─────────────────────────────────────────────────────────────────
+function generatePrompt() {
+  const name = document.getElementById('artist-input').value.trim();
+  if(!name) return;
+  const prompt = `Sei un esperto di mercato dell'arte. Per l'artista "${name}" (pittore/scultore), restituisci SOLO un oggetto JSON valido — nessun testo prima o dopo, nessun backtick, nessun markdown.
+
+Schema esatto (tutti i campi array contengono stringhe con i nomi specifici):
+{
+  "name": "Nome Cognome ufficiale completo",
+  "birth": "anno",
+  "death": "anno o stringa vuota se vivente",
+  "period": "es. 1944-1994",
+  "movement": "movimento principale",
+  "leader": "si o no",
+  "museumA": ["nome museo elite internazionale", ...],
+  "museumB": ["nome museo primario nazionale/europeo", ...],
+  "museumC": ["nome museo importante regionale o fondazione museale", ...],
+  "museumD": ["nome museo locale/civico", ...],
+  "galleryA": ["nome mega galleria internazionale", ...],
+  "galleryB": ["nome galleria primaria internazionale", ...],
+  "galleryC": ["nome galleria nazionale di primo livello", ...],
+  "galleryD": ["nome galleria locale", ...],
+  "prizeA": ["nome premio internazionale massimo (Turner, Leone d'oro, Praemium Imperiale…)", ...],
+  "prizeB": ["nome premio nazionale importante", ...],
+  "prizeC": ["nome menzione o riconoscimento minore", ...],
+  "fairA": ["nome fiera top mondiale (Art Basel, Frieze, Biennale Venezia…)", ...],
+  "fairB": ["nome fiera europea primaria (FIAC, Artissima, arco…)", ...],
+  "fairC": ["nome altra fiera", ...],
+  "mono": numero intero monografie note,
+  "cat": numero intero cataloghi collettivi noti,
+  "solo": numero intero mostre personali stimate,
+  "group": numero intero mostre collettive stimate,
+  "auction1": fatturato aste ultimo anno noto in euro come numero intero,
+  "auction3": fatturato aste ultimi 3 anni in euro come numero intero,
+  "fakes": numero intero falsi noti,
+  "cr": "si o no",
+  "found": "si o no",
+  "cur": "intl o naz o no",
+  "privColl": "si o no",
+  "search": volume mensile stimato ricerche google come numero intero,
+  "aiComment": "2-3 frasi sintetiche in italiano sul profilo artistico e di mercato, tono da advisor professionale"
+}
+
+Inserisci solo istituzioni/gallerie/premi reali e verificabili per questo artista. Array vuoto [] se nessuno. Rispondi SOLO con il JSON.`;
+
+  document.getElementById('prompt-box').textContent = prompt;
+  document.getElementById('prompt-area').style.display = '';
+  document.getElementById('json-input').value = '';
+  document.getElementById('ai-result').innerHTML = '';
+}
+
+function copyPrompt() {
+  const txt = document.getElementById('prompt-box').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = event.target; btn.textContent='✓ Copiato!'; setTimeout(()=>btn.textContent='📋 Copia prompt',2000);
+  });
+}
+
+function parseAndRender() {
+  const raw = document.getElementById('json-input').value.trim();
+  if(!raw){document.getElementById('ai-result').innerHTML='<div class="err-box">Incolla prima il JSON.</div>';return;}
+  try {
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const d = JSON.parse(clean);
+    // Populate tier inputs from JSON, then switch to manual tab to use tier lists
+    populateTierFromJSON(d);
+    // Also fill basic fields
+    if(d.name) document.getElementById('m-name').value=d.name;
+    if(d.period) document.getElementById('m-period').value=d.period;
+    if(d.movement) document.getElementById('m-movement').value=d.movement;
+    if(d.leader) document.getElementById('m-leader').value=d.leader==='si'?'si':'no';
+    if(d.mono) document.getElementById('m-mono').value=d.mono;
+    if(d.cat) document.getElementById('m-cat').value=d.cat;
+    if(d.solo) document.getElementById('m-solo').value=d.solo;
+    if(d.group) document.getElementById('m-group').value=d.group;
+    if(d.auction1) document.getElementById('m-auction1').value=d.auction1;
+    if(d.auction3) document.getElementById('m-auction3').value=d.auction3;
+    if(d.fakes) document.getElementById('m-fakes').value=d.fakes;
+    if(d.search) document.getElementById('m-search').value=d.search;
+    if(d.cr) document.getElementById('m-cr').value=d.cr==='si'?'si':'no';
+    if(d.found) document.getElementById('m-found').value=d.found==='si'?'si':'no';
+    if(d.cur) document.getElementById('m-cur').value=d.cur;
+    if(d.privColl) document.getElementById('m-priv-coll').value=d.privColl==='si'?'si':'no';
+
+    const scores = buildScores(d);
+    renderResult(d, scores, document.getElementById('ai-result'));
+    document.getElementById('ai-result').scrollIntoView({behavior:'smooth',block:'start'});
+  } catch(e) {
+    document.getElementById('ai-result').innerHTML=`<div class="err-box">❌ JSON non valido: ${e.message}</div>`;
+  }
+}
+
+function resetAI(){
+  document.getElementById('artist-input').value='';
+  document.getElementById('prompt-area').style.display='none';
+  document.getElementById('json-input').value='';
+  document.getElementById('ai-result').innerHTML='';
+}
+
+// ── MANUAL ─────────────────────────────────────────────────────────────────────
+function computeManual() {
+  const name = document.getElementById('m-name').value.trim();
+  if(!name){alert('Inserisci almeno il nome dell\'artista.');return;}
+  const d = {
+    name, period:document.getElementById('m-period').value.trim(),
+    movement:document.getElementById('m-movement').value.trim(),
+    leader:document.getElementById('m-leader').value,
+    mono:document.getElementById('m-mono').value, cat:document.getElementById('m-cat').value,
+    solo:document.getElementById('m-solo').value, group:document.getElementById('m-group').value,
+    auction1:document.getElementById('m-auction1').value, auction3:document.getElementById('m-auction3').value,
+    fakes:document.getElementById('m-fakes').value, search:document.getElementById('m-search').value,
+    cr:document.getElementById('m-cr').value, found:document.getElementById('m-found').value,
+    cur:document.getElementById('m-cur').value, privColl:document.getElementById('m-priv-coll').value,
+    aiComment:''
+  };
+  const scores = buildScores(d);
+  renderResult(d, scores, document.getElementById('manual-result'));
+  document.getElementById('manual-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function resetManual(){
+  document.querySelectorAll('#tab-manual input,#tab-manual select').forEach(el=>el.value='');
+  ['museum','gallery','prize','fair'].forEach(type=>{
+    ['A','B','C','D'].forEach(t=>{const el=document.getElementById(type+t+'-list');if(el)el.innerHTML='';});
+  });
+  document.getElementById('manual-result').innerHTML='';
+}
+
+// ── TABS ───────────────────────────────────────────────────────────────────────
+function switchTab(t){
+  ['ai','manual'].forEach(x=>{
+    document.getElementById('tab-'+x).style.display=x===t?'':'none';
+    document.getElementById('tab-'+x+'-btn').classList.toggle('active',x===t);
+  });
+}
+
+// ── HISTORY ────────────────────────────────────────────────────────────────────
+const HK='artrating_v2_history';
+function getHistory(){try{return JSON.parse(localStorage.getItem(HK)||'[]');}catch{return[];}}
+function saveToHistory(e){let h=getHistory();h=h.filter(x=>x.name.toLowerCase()!==e.name.toLowerCase());h.unshift(e);if(h.length>20)h=h.slice(0,20);localStorage.setItem(HK,JSON.stringify(h));renderHistory();}
+function clearHistory(){localStorage.removeItem(HK);renderHistory();}
+function renderHistory(){
+  const h=getHistory();const el=document.getElementById('history-list');
+  if(!h.length){el.innerHTML='<div style="font-size:13px;color:var(--textm)">Nessuna ricerca ancora.</div>';return;}
+  el.innerHTML=h.map(x=>{
+    const ini=x.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    return`<div class="hi" onclick="reloadHistory('${x.name.replace(/'/g,"\\'")}')">
+      <div class="ha">${ini}</div>
+      <div><div class="hn">${x.name}</div><div class="hm2">${x.movement||'N/D'}${x.period?' · '+x.period:''}</div></div>
+      <div class="hs">${Number(x.total).toLocaleString('it-IT',{maximumFractionDigits:0})}</div>
+    </div>`;
+  }).join('');
+}
+function reloadHistory(name){switchTab('ai');document.getElementById('artist-input').value=name;generatePrompt();}
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  renderHistory();
+  document.getElementById('artist-input').addEventListener('keydown',e=>{if(e.key==='Enter')generatePrompt();});
+});
+</script>
+</body>
+</html>
