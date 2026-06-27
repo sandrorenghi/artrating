@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metodologia — ArtRating</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html">🎨 <span>Art</span>Rating</a>
+  <div class="nav-links">
+    <a class="nav-link" href="../index.html">Home</a>
+    <a class="nav-link" href="bluechip.html">Blue Chip</a>
+    <a class="nav-link" href="italiani.html">Italiani</a>
+    <a class="nav-link" href="emergenti.html">Emergenti</a>
+    <a class="nav-link" href="confronta.html">Confronta</a>
+    <a class="nav-link active" href="metodologia.html">Metodologia</a>
+  </div>
+</nav>
+<div class="page-sm">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <div class="hero"><h1>Metodologia</h1><p>Come funziona il motore di rating: input, pesi, tier e fonti dei dati.</p></div>
+
+  <div class="meth-section">
+    <div class="meth-h2">1. Versione corrente</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <span class="hero-badge hb-ver">v3.0 — giugno 2026</span>
+      <span class="hero-badge hb-src">Dati Artprice certificati</span>
+      <span class="hero-badge hb-date">Sviluppato da Sandro Renghi</span>
+    </div>
+    <div class="meth-body">Il motore aggrega 25+ variabili di input in un punteggio finale che riflette quattro dimensioni: presenza istituzionale, qualità documentale, attività espositiva e performance di mercato. I pesi sono calibrati per valorizzare la reputazione istituzionale a lungo termine rispetto alla volatilità del mercato d'aste.</div>
+  </div>
+
+  <div class="meth-section">
+    <div class="meth-h2">2. Sistema Tier — Musei</div>
+    <table class="meth-table">
+      <tr><th>Tier</th><th>Punti</th><th>Descrizione</th><th>Esempi</th></tr>
+      <tr><td><span class="tier-badge ta">A</span></td><td style="color:var(--gold);font-weight:600">+50 pt</td><td>Elite internazionale</td><td>MoMA, Tate, Pompidou, Guggenheim, Louvre, Uffizi, Met</td></tr>
+      <tr><td><span class="tier-badge tb">B</span></td><td style="color:var(--gold);font-weight:600">+30 pt</td><td>Primari nazionali/europei</td><td>Stedelijk, MAXXI, GAM Torino, Fondation Louis Vuitton</td></tr>
+      <tr><td><span class="tier-badge tc">C</span></td><td style="color:var(--gold);font-weight:600">+15 pt</td><td>Importanti regionali</td><td>Fondazioni museali, musei nazionali di primo livello</td></tr>
+      <tr><td><span class="tier-badge td">D</span></td><td style="font-weight:600">+5 pt</td><td>Musei locali/civici</td><td>Musei civici, collezioni regionali</td></tr>
+    </table>
+  </div>
+
+  <div class="meth-section">
+    <div class="meth-h2">3. Sistema Tier — Gallerie</div>
+    <table class="meth-table">
+      <tr><th>Tier</th><th>Punti</th><th>Descrizione</th><th>Esempi</th></tr>
+      <tr><td><span class="tier-badge ta">A</span></td><td style="color:var(--gold);font-weight:600">+25 pt</td><td>Mega gallerie internazionali</td><td>Gagosian, Hauser & Wirth, Pace, David Zwirner, White Cube</td></tr>
+      <tr><td><span class="tier-badge tb">B</span></td><td style="color:var(--gold);font-weight:600">+15 pt</td><td>Primarie internazionali</td><td>Tornabuoni, Cardi, Sperone Westwater, Lisson, Massimo De Carlo</td></tr>
+      <tr><td><span class="tier-badge tc">C</span></td><td style="color:var(--gold);font-weight:600">+8 pt</td><td>Nazionali di primo livello</td><td>Gallerie con programma internazionale</td></tr>
+      <tr><td><span class="tier-badge td">D</span></td><td style="font-weight:600">+3 pt</td><td>Gallerie locali/emergenti</td><td>Gallerie locali, spazi indipendenti</td></tr>
+    </table>
+  </div>
+
+  <div class="meth-section">
+    <div class="meth-h2">4. Premi, fiere e voci fisse</div>
+    <table class="meth-table">
+      <tr><th>Voce</th><th>Punti</th></tr>
+      <tr><td>Premio Tier A (Turner, Leone d'oro, Praemium Imperiale)</td><td style="color:var(--gold);font-weight:600">+30 pt</td></tr>
+      <tr><td>Premio Tier B (premi nazionali importanti)</td><td style="color:var(--gold);font-weight:600">+15 pt</td></tr>
+      <tr><td>Premio Tier C (menzioni, riconoscimenti minori)</td><td style="color:var(--gold);font-weight:600">+7 pt</td></tr>
+      <tr><td>Fiera Tier A (Art Basel, Frieze, Biennale Venezia, TEFAF)</td><td style="color:var(--gold);font-weight:600">+5 pt</td></tr>
+      <tr><td>Fiera Tier B (FIAC, Artissima, arco)</td><td style="color:var(--gold);font-weight:600">+3 pt</td></tr>
+      <tr><td>Caposcuola del movimento</td><td style="color:var(--gold);font-weight:600">+10 pt</td></tr>
+      <tr><td>Appartiene a movimento artistico</td><td style="color:var(--gold);font-weight:600">+10 pt</td></tr>
+      <tr><td>Catalogue raisonné pubblicato</td><td style="color:var(--gold);font-weight:600">+10 pt</td></tr>
+      <tr><td>Fondazione / Archivio attivo</td><td style="color:var(--gold);font-weight:600">+10 pt</td></tr>
+      <tr><td>Curatore internazionale di riferimento</td><td style="color:var(--gold);font-weight:600">+15 pt</td></tr>
+      <tr><td>Curatore nazionale di riferimento</td><td style="color:var(--gold);font-weight:600">+8 pt</td></tr>
+      <tr><td>Presenza collezioni private rilevanti</td><td style="color:var(--gold);font-weight:600">+8 pt</td></tr>
+      <tr><td>Monografie edite (per unità)</td><td style="color:var(--gold);font-weight:600">× 0.1 pt</td></tr>
+      <tr><td>Mostre personali e collettive (per unità)</td><td style="color:var(--gold);font-weight:600">× 0.1 pt</td></tr>
+      <tr><td>Falsi riscontrati (penalità)</td><td style="color:var(--err);font-weight:600">−1 pt ciasc.</td></tr>
+    </table>
+  </div>
+
+  <div class="meth-section">
+    <div class="meth-h2">5. Mercato aste e web reputation</div>
+    <table class="meth-table">
+      <tr><th>Voce</th><th>Moltiplicatore</th><th>Note</th></tr>
+      <tr><td>Fatturato aste ultimo anno (M€)</td><td>× 0.000005 × 1.000.000</td><td>Hammer price, no buyer's premium</td></tr>
+      <tr><td>Fatturato aste ultimi 3 anni (M€)</td><td>× 0.000005 × 1.000.000</td><td>Ridotto del 50% vs v2 per bilanciare</td></tr>
+      <tr><td>Citazioni critiche specializzate</td><td>× 2.0 pt</td><td>Artforum, Frieze, Flash Art, accademiche</td></tr>
+      <tr><td>Citazioni media generalisti</td><td>× 1.0 pt</td><td>NYT, Guardian, Corriere, Le Monde</td></tr>
+      <tr><td>Citazioni blog/social</td><td>× 0.3 pt</td><td>Blog arte, social media, testate minori</td></tr>
+      <tr><td>Volume ricerche Google (mensile)</td><td>× 0.000002</td><td>Proxy di notorietà pubblica</td></tr>
+    </table>
+    <div class="meth-body" style="margin-top:8px;"><strong>Fonte fatturato:</strong> Artprice.com — la principale banca dati mondiale per i risultati delle aste d'arte, con oltre 30 milioni di lotti indicizzati. I valori sono espressi in hammer price (prezzo di martello), senza buyer's premium, per garantire uniformità di confronto.</div>
+  </div>
+
+  <div class="meth-section">
+    <div class="meth-h2">6. Cluster di mercato</div>
+    <table class="meth-table">
+      <tr><th>Cluster</th><th>Rating</th><th>Descrizione</th></tr>
+      <tr><td><span class="ac-cat cl-premier">Premier League</span></td><td>&gt; 3.000 pt</td><td>Artisti con mercato globale dominante, fatturato triennale &gt; €150M</td></tr>
+      <tr><td><span class="ac-cat cl-a">Serie A</span></td><td>1.500–3.000 pt</td><td>Maestri di valore assoluto internazionale</td></tr>
+      <tr><td><span class="ac-cat cl-b">Serie B</span></td><td>800–1.500 pt</td><td>Artisti solidi con forte presenza istituzionale</td></tr>
+      <tr><td><span class="ac-cat cl-c">Serie C</span></td><td>300–800 pt</td><td>Valore prevalentemente istituzionale, mercato contenuto</td></tr>
+      <tr><td><span class="ac-cat cl-em">Emergente</span></td><td>&lt; 300 pt</td><td>Artisti in crescita, da monitorare</td></tr>
+    </table>
+  </div>
+
+  <div class="meth-section">
+    <div class="meth-h2">7. Note e limiti</div>
+    <div class="meth-body">I dati di fatturato non includono le vendite private (dealer market), che per alcuni artisti possono essere prevalenti. Le presenze museali sono verificate su fonti pubbliche. Il rating va sempre integrato con il giudizio professionale dell'advisor e non costituisce consulenza di investimento.</div>
+    <div class="meth-body">Aggiornamento consigliato: trimestrale per i dati di mercato, semestrale per le presenze istituzionali.</div>
+  </div>
+
+  <div class="meth-section">
+    <div class="meth-h2">8. Changelog versioni</div>
+    <table class="meth-table">
+      <tr><th>Versione</th><th>Data</th><th>Novità principali</th></tr>
+      <tr><td><strong>v3.0</strong></td><td>Giugno 2026</td><td>Tier musei/gallerie/premi/fiere · Aste ridotte −50% · Web reputation · Dati Artprice</td></tr>
+      <tr><td>v2.0</td><td>Giugno 2026</td><td>Introduzione sistema tier · Gallerie nominali · Premi differenziati</td></tr>
+      <tr><td>v1.0</td><td>Giugno 2026</td><td>Prima versione · Punteggi fissi sì/no · Nessun tier</td></tr>
+    </table>
+  </div>
+
+</div>
+<footer><p><strong>ArtRating</strong> · Sviluppato da Sandro Renghi · v3.0 · Giugno 2026</p><p>Dati fatturato: Artprice.com</p></footer>
+</body>
+</html>
